@@ -33,7 +33,7 @@
   "outlets": "outlets.geojson"
  },
  "bytes": {
-  "systems": 150130,
+  "systems": 152205,
   "subbasins": 160678,
   "rivers": 344928,
   "outlets": 2552
@@ -202,33 +202,33 @@
   "Terrain: Relief (Copernicus DEM GLO-90, EMODnet Bathymetry)"
  ],
  "basis": "Observed: HydroSHEDS drainage (HydroBASINS, HydroRIVERS), the surveys' bedrock maps, Relief terrain and climate zones. Derived: area fractions of class, era and grain per catchment, named indices, k-means groups, the BQART budget and the sand quality and sand share proxies (docs/SAND_QUALITY.md, docs/BUDGET.md). Interpreted: the glauconite-prone flag and the reading in docs/CONCEPT.md.",
- "built": "2026-11-10T07:58:18+00:00",
+ "built": "2026-11-10T21:44:18+00:00",
  "budget": {
   "catchments": 24,
-  "total_qs_mt_yr": 4.084701992191863,
-  "total_sand_mt_yr": 2.9714894122098174,
-  "median_yield_t_km2_yr": 13.272531293774051,
+  "total_qs_mt_yr": 4.084716904301652,
+  "total_sand_mt_yr": 3.034702323054703,
+  "median_yield_t_km2_yr": 13.272532117881171,
   "glauconite_prone": 7,
-  "calibration_factor": 2.0384689588506975,
+  "calibration_factor": 2.0384724474244114,
   "calibration_basis": "median of 1 monitored rivers in this frame (Glomma)",
-  "total_qs_cal_mt_yr": 2.0038087773947977,
-  "total_sand_cal_mt_yr": 1.457706480791919
+  "total_qs_cal_mt_yr": 2.0038126634787967,
+  "total_sand_cal_mt_yr": 1.488713927376854
  },
  "checks": [
   {
    "river": "Glomma",
    "known_mt_yr": 0.4,
-   "model_mt_yr": 0.8153875835402791,
-   "ratio_model_over_known": 2.0384689588506975,
+   "model_mt_yr": 0.8153889789697646,
+   "ratio_model_over_known": 2.0384724474244114,
    "q_source": "HydroRIVERS mouth reach",
    "relief_km": 2.212,
-   "temp_c": -0.0297850837250897,
+   "temp_c": -0.02983128833007631,
    "L": 0.8775844051769588,
    "basis": "order 0.3 to 0.6 Mt/yr (Bogen, NVE), figure from memory, to be checked"
   }
  ],
  "slope_flow": {
-  "file": "slope_flow.geojson",
+  "file": "../../../release/s2s__north_sea__slope_flow.json",
   "lines": 6826,
   "bytes": 9694712,
   "gradient_p50": 0.025920878286706285,

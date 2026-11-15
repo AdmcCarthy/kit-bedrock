@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from publish import DATA_TAG, DIST  # noqa: E402
 
-REPO = "AdmcCarthy/Bedrock"
+REPO = "AdmcCarthy/kit-bedrock"
 
 
 def main() -> None:

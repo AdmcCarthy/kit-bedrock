@@ -168,7 +168,7 @@
    "maps": [
     {
      "map_id": "se_sgu_1m_bedrock",
-     "file": "regional__se_sgu_1m_bedrock.topojson",
+     "file": "../../../release/geology__norway__regional__se_sgu_1m_bedrock.topojson",
      "title": "Sweden, SGU bedrock 1:1 000 000",
      "register_id": "sgu-bedrock-1m",
      "source_scale": 1000000,
@@ -308,7 +308,7 @@
    "maps": [
     {
      "map_id": "se_sgu_1m_bedrock",
-     "file": "detail__se_sgu_1m_bedrock.topojson",
+     "file": "../../../release/geology__norway__detail__se_sgu_1m_bedrock.topojson",
      "title": "Sweden, SGU bedrock 1:1 000 000",
      "register_id": "sgu-bedrock-1m",
      "source_scale": 1000000,
@@ -352,7 +352,7 @@
     },
     {
      "map_id": "fi_gtk_1m_rocktypes",
-     "file": "detail__fi_gtk_1m_rocktypes.topojson",
+     "file": "../../../release/geology__norway__detail__fi_gtk_1m_rocktypes.topojson",
      "title": "Finland, GTK generalised bedrock rock types 1:1 000 000",
      "register_id": "gtk-bedrock-finland",
      "source_scale": 1000000,

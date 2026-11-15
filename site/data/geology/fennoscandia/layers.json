@@ -214,7 +214,7 @@
     },
     {
      "map_id": "se_sgu_1m_bedrock",
-     "file": "regional__se_sgu_1m_bedrock.topojson",
+     "file": "../../../release/geology__fennoscandia__regional__se_sgu_1m_bedrock.topojson",
      "title": "Sweden, SGU bedrock 1:1 000 000",
      "register_id": "sgu-bedrock-1m",
      "source_scale": 1000000,

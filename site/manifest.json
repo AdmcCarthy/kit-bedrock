@@ -156,6 +156,80 @@
    },
    "relief": false
   },
+  "ne_europe": {
+   "name": "North-east Europe",
+   "levels": [
+    "overview",
+    "regional"
+   ],
+   "maps": {
+    "eu_igme5000": {
+     "title": "Europe, IGME 5000 pre-Quaternary geology 1:5 000 000 (BGR)",
+     "licence": {
+      "name": "Free of charge; citation required (Asch); no licence name found",
+      "status": "unverified"
+     },
+     "attribution": "Asch, K. and the IGME 5000 project (BGR); DOI 10.25928/igme-5000"
+    },
+    "pl_pig_1m": {
+     "title": "Poland, PIG geological map 1:1 000 000 units",
+     "licence": {
+      "name": "Not found for these services",
+      "status": "unverified"
+     },
+     "attribution": "Polish Geological Institute - National Research Institute (PIG-PIB)"
+    },
+    "se_sgu_1m_bedrock": {
+     "title": "Sweden, SGU bedrock 1:1 000 000",
+     "licence": {
+      "name": "SGU says its open geodata is free of charge and may be used and published freely; no licence name seen",
+      "status": "reported"
+     },
+     "attribution": "Source: SGU"
+    },
+    "fi_gtk_1m_rocktypes": {
+     "title": "Finland, GTK generalised bedrock rock types 1:1 000 000",
+     "licence": {
+      "name": "GTK Open Licence, compatible with CC BY 4.0, valid from 1 December 2025",
+      "status": "reported"
+     },
+     "attribution": "Contains data from the Geological Survey of Finland (GTK), CC BY 4.0 compatible open licence"
+    },
+    "no_ngu_n1350_units": {
+     "title": "Norway, NGU bedrock units 1:1 350 000",
+     "licence": {
+      "name": "NLOD; credit NGU",
+      "status": "reported"
+     },
+     "attribution": "Contains data made available by NGU under NLOD"
+    },
+    "uk_bgs_625k_bedrock": {
+     "title": "Great Britain, BGS Geology 625k bedrock (DiGMapGB-625 v5)",
+     "licence": {
+      "name": "Open Government Licence, as reported by BGS; some catalogue records say licence not set",
+      "status": "reported"
+     },
+     "attribution": "Contains NERC materials (c) NERC [year]"
+    },
+    "ni_gsni_250k_bedrock": {
+     "title": "Northern Ireland, GSNI bedrock polygons 1:250 000",
+     "licence": {
+      "name": "Open Government Licence v3.0 for GSNI data, as reported by Geological Survey Ireland",
+      "status": "reported"
+     },
+     "attribution": "Contains GSNI data under the Open Government Licence v3.0"
+    },
+    "ie_gsi_500k_bedrock": {
+     "title": "Ireland, GSI and GSNI bedrock 1:500 000",
+     "licence": {
+      "name": "CC BY 4.0 for data produced by the Geological Survey Ireland; UK Open Government Licence v3.0 for data produced by GSNI (read from the licence file in the archive)",
+      "status": "verified"
+     },
+     "attribution": "Contains Irish Public Sector Data (Geological Survey Ireland) licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence."
+    }
+   },
+   "relief": true
+  },
   "ne_europe_open": {
    "name": "North-east Europe, open-licence maps only",
    "levels": [
@@ -221,6 +295,24 @@
     }
    },
    "relief": true
+  },
+  "europe": {
+   "name": "Europe, pre-Quaternary geology (IGME 5000)",
+   "levels": [
+    "overview",
+    "regional"
+   ],
+   "maps": {
+    "eu_igme5000": {
+     "title": "Europe, IGME 5000 pre-Quaternary geology 1:5 000 000 (BGR)",
+     "licence": {
+      "name": "Free of charge; citation required (Asch); no licence name found",
+      "status": "unverified"
+     },
+     "attribution": "Asch, K. and the IGME 5000 project (BGR); DOI 10.25928/igme-5000"
+    }
+   },
+   "relief": false
   }
  },
  "s2s": {

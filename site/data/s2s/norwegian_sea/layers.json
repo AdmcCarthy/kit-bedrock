@@ -33,7 +33,7 @@
   "outlets": "outlets.geojson"
  },
  "bytes": {
-  "systems": 203084,
+  "systems": 207029,
   "subbasins": 223887,
   "rivers": 674527,
   "outlets": 2728
@@ -193,21 +193,21 @@
   "Terrain: Relief (Copernicus DEM GLO-90, EMODnet Bathymetry)"
  ],
  "basis": "Observed: HydroSHEDS drainage (HydroBASINS, HydroRIVERS), the surveys' bedrock maps, Relief terrain and climate zones. Derived: area fractions of class, era and grain per catchment, named indices, k-means groups, the BQART budget and the sand quality and sand share proxies (docs/SAND_QUALITY.md, docs/BUDGET.md). Interpreted: the glauconite-prone flag and the reading in docs/CONCEPT.md.",
- "built": "2026-11-10T07:58:34+00:00",
+ "built": "2026-11-10T21:44:34+00:00",
  "budget": {
   "catchments": 32,
-  "total_qs_mt_yr": 6.31180553562136,
-  "total_sand_mt_yr": 5.060012369815576,
-  "median_yield_t_km2_yr": 11.268138395134436,
+  "total_qs_mt_yr": 6.311805157397121,
+  "total_sand_mt_yr": 5.060012026928957,
+  "median_yield_t_km2_yr": 11.268137151719134,
   "glauconite_prone": 12,
   "calibration_factor": 2.5,
   "calibration_basis": "no monitored river in this frame; the median factor of the North-east Europe frame is used",
-  "total_qs_cal_mt_yr": 2.524722214248544,
-  "total_sand_cal_mt_yr": 2.0240049479262305
+  "total_qs_cal_mt_yr": 2.5247220629588485,
+  "total_sand_cal_mt_yr": 2.024004810771583
  },
  "checks": [],
  "slope_flow": {
-  "file": "slope_flow.geojson",
+  "file": "../../../release/s2s__norwegian_sea__slope_flow.json",
   "lines": 4567,
   "bytes": 7017180,
   "gradient_p50": 0.010651416300485531,

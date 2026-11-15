@@ -10,6 +10,7 @@
 const params = new URLSearchParams(location.search);
 const region = params.get("r") || "ne_europe";
 const base = `data/s2s/${region}/`;
+const src = f => /^https?:/.test(f) ? f : base + f;   // a layer file may live on a release (the big files are release assets, copied into site/release/ at deploy)
 const theme = params.get("theme");
 if (theme) document.documentElement.dataset.theme = theme;
 const dark = theme ? theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
@@ -23,24 +24,38 @@ const doc = await (await fetch(base + "layers.json")).json();
 document.getElementById("title").textContent = doc.name; document.title = doc.name;
 const stage = document.getElementById("stage"), canvas = document.getElementById("map"), ctx = canvas.getContext("2d"), tip = document.getElementById("tip");
 
-const slopeFlow = doc.slope_flow ? await fetch(base + doc.slope_flow.file).then(r => r.ok ? r.json() : null).catch(() => null) : null;
-const [topoS, topoR, outlets, bands] = await Promise.all([
-  fetch(base + doc.files.systems).then(r => r.json()), fetch(base + doc.files.rivers).then(r => r.json()),
-  fetch(base + doc.files.outlets).then(r => r.json()), fetch(doc.relief.bands).then(r => r.ok ? r.json() : null).catch(() => null),
+// The slope-flow lines are the largest file. They arrive after the first paint (the page renders without them, then once
+// more when they land), and they may come compact: {"q": metres per unit, "lines": [[x0, y0, dx1, dy1, ...], ...],
+// "grad": [...]} with integer deltas, which Bedrock's publish.py writes at a third of the GeoJSON's size.
+let slopeFlow = null;
+function unpackSlope(j) {
+  if (!j || !j.lines) return j;
+  const q = j.q || 1, feats = [];
+  for (let i = 0; i < j.lines.length; i++) {
+    const a = j.lines[i], coords = [[a[0] * q, a[1] * q]];
+    for (let k = 2; k < a.length; k += 2) { const p = coords[coords.length - 1]; coords.push([p[0] + a[k] * q, p[1] + a[k + 1] * q]); }
+    feats.push({ type: "Feature", properties: { mean_gradient: j.grad[i] }, geometry: { type: "LineString", coordinates: coords } });
+  }
+  return { type: "FeatureCollection", features: feats };
+}
+const slopeReady = doc.slope_flow ? fetch(src(doc.slope_flow.file)).then(r => r.ok ? r.json() : null).then(j => { slopeFlow = unpackSlope(j); slopePaths.clear(); if (riverMode === "all" || riverMode === "slope") render(); }).catch(() => null) : Promise.resolve();
+// Relief's base map (docs/base-maps.md in Relief): linear bathymetry on the frame's depth scale, stepped land tints by climate
+// zone, rendered once by Relief and drawn here as it is; its manifest names the depth scale for the key and, when Relief wrote
+// them, the WebP tints and a neutral shade (flat ground at mid grey) that need no remapping. Bands are fetched only without a base.
+const reliefDir = (doc.relief.hillshade).replace(/\/[^/]*$/, "");
+const loadImg = async (u) => { const im = new Image(); im.decoding = "async"; im.src = u; await new Promise(res => { im.onload = res; im.onerror = res; }); return im.width ? im : null; };
+const rman = await fetch(reliefDir + "/manifest.json").then(r => r.ok ? r.json() : null).catch(() => null);
+const [topoS, topoR, outlets, baseImg0] = await Promise.all([
+  fetch(src(doc.files.systems)).then(r => r.json()), fetch(src(doc.files.rivers)).then(r => r.json()), fetch(src(doc.files.outlets)).then(r => r.json()),
+  rman && rman.base ? loadImg(reliefDir + "/" + ((rman.base.webp || {})[dark ? "dark" : "light"] || rman.base.regional[dark ? "dark" : "light"])) : null,
 ]);
+const baseImg = baseImg0 || new Image();
+const bands = baseImg.width ? null : await fetch(doc.relief.bands).then(r => r.ok ? r.json() : null).catch(() => null);
 const systems = topojson.feature(topoS, topoS.objects.systems).features;
 const systemMesh = topojson.mesh(topoS, topoS.objects.systems, (a, b) => a !== b);
 const rivers = topojson.feature(topoR, topoR.objects.rivers).features;
-const hill = new Image(); hill.src = doc.relief.hillshade;
-await new Promise(res => { hill.onload = res; hill.onerror = res; });
-// Relief's base map (docs/base-maps.md in Relief): linear bathymetry on the frame's depth scale, stepped land tints by climate
-// zone, rendered once by Relief and drawn here as it is; its manifest names the depth scale for the key
-const reliefDir = ("../../" + doc.relief.hillshade).replace(/\/[^/]*$/, "");
-const rman = await fetch(reliefDir + "/manifest.json").then(r => r.ok ? r.json() : null).catch(() => null);
-const baseImg = new Image();
-if (rman && rman.base) { baseImg.src = reliefDir + "/" + rman.base.regional[dark ? "dark" : "light"]; await new Promise(res => { baseImg.onload = res; baseImg.onerror = res; }); }
 // Relief's hillshade PNG is light (flat ground sits near 180 of 255), and soft-light is neutral at mid grey, so drawn as it
-// comes it barely shows. Flat ground is moved to mid grey and the slopes stretched before the shade is composited.
+// comes it barely shows; where Relief has not written the neutral shade, flat ground is moved to mid grey here first.
 function toneHill(img, flat = 180, gain = 2.5) {
   const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
   const x = c.getContext("2d"); x.drawImage(img, 0, 0);
@@ -48,8 +63,20 @@ function toneHill(img, flat = 180, gain = 2.5) {
   for (let i = 0; i < p.length; i += 4) { const v = Math.max(0, Math.min(255, 128 + (p[i] - flat) * gain)); p[i] = p[i + 1] = p[i + 2] = v; }
   x.putImageData(d, 0, 0); return c;
 }
-const hillT = hill.width ? toneHill(hill) : null;
+let hillT = null;
+if (rman && rman.base && rman.base.shade) hillT = await loadImg(reliefDir + "/" + rman.base.shade.file);
+else { const hill = await loadImg(doc.relief.hillshade); hillT = hill ? toneHill(hill) : null; }
 for (const f of systems) f.bbox = d3.geoPath().bounds(f);
+
+// Geometry is projected once per canvas size into Path2D objects and reused on every redraw (a view or ink change
+// otherwise re-walked every polygon, river and thread). The cache empties when the projection changes.
+let pathKey = "";
+const sysPaths = new Map(), riverPaths = new Map(), ribbonPaths = new Map(), slopePaths = new Map();
+function path2d(cache, key, f) {
+  let p = cache.get(key);
+  if (!p) { p = new Path2D(); d3.geoPath(proj, p)(f); cache.set(key, p); }
+  return p;
+}
 
 /* Relief's Detuned house style, copied from Relief/preview/palette.js: the shelf depth ramp (0 to 1,300 m, linear) and the
    temperate height ramp at half saturation. Relief's stacked bands are coloured at each band's midpoint, so the sea and the
@@ -142,6 +169,7 @@ function render() {
   const [x0, y0, x1, y1] = doc.extent;
   proj = d3.geoIdentity().reflectY(true).fitExtent([[0, 0], [W, H]], { type: "Polygon", coordinates: [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]] });
   path = d3.geoPath(proj, ctx);
+  const key = `${W}x${H}`; if (key !== pathKey) { pathKey = key; sysPaths.clear(); riverPaths.clear(); ribbonPaths.clear(); slopePaths.clear(); }
   const [px0, py1] = proj([x0, y0]), [px1, py0] = proj([x1, y1]);
   ctx.fillStyle = getComputedStyle(document.body).getPropertyValue("--sea").trim(); ctx.fillRect(0, 0, W, H);
   // Relief's base map under everything (linear sea, stepped climate-tinted land); the bands coloured here only if a frame has no base yet
@@ -151,8 +179,9 @@ function render() {
   // catchments
   const shown = systems.filter(f => visible(f.properties));
   const fa = ink === "strong" ? (dark ? 0.55 : 0.5) : (dark ? 0.35 : 0.3);
-  for (const f of shown) { const c = fillOf(f.properties); if (!c) continue; ctx.beginPath(); path(f); ctx.fillStyle = alphaFill(c, fa); ctx.fill(); }
-  ctx.save(); if (ink !== "strong") ctx.setLineDash([3, 3]); ctx.beginPath(); for (const f of shown) path(f); ctx.strokeStyle = inkEdge(); ctx.lineWidth = ink === "strong" ? 1.3 : 0.55; ctx.lineJoin = "round"; ctx.stroke(); ctx.restore();
+  for (const f of shown) { const c = fillOf(f.properties); if (!c) continue; ctx.fillStyle = alphaFill(c, fa); ctx.fill(path2d(sysPaths, f.properties.system, f)); }
+  ctx.save(); if (ink !== "strong") ctx.setLineDash([3, 3]); ctx.strokeStyle = inkEdge(); ctx.lineWidth = ink === "strong" ? 1.3 : 0.55; ctx.lineJoin = "round";
+  for (const f of shown) ctx.stroke(path2d(sysPaths, f.properties.system, f)); ctx.restore();
   // hillshade multiplied over the fills so the terrain shows through
   if (hillT && shade > 0) { ctx.save(); ctx.globalCompositeOperation = "soft-light"; ctx.globalAlpha = Math.min(1, shade); ctx.drawImage(hillT, px0, py0, px1 - px0, py1 - py0); if (shade > 1) { ctx.drawImage(hillT, px0, py0, px1 - px0, py1 - py0); ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = (shade - 1) * 0.6; ctx.drawImage(hillT, px0, py0, px1 - px0, py1 - py0); } ctx.restore(); }
   // rivers
@@ -164,9 +193,9 @@ function render() {
   if (riverMode === "network" || riverMode === "all") {
     for (const f of rivers) {
       if (fold && !sysOf.has(f.properties.system)) continue;
-      const q = f.properties.log_discharge ?? 0; ctx.beginPath(); path(f);
+      const q = f.properties.log_discharge ?? 0;
       ctx.lineWidth = riverMode === "all" ? 0.3 : Math.max(0.3, (ink === "strong" ? 0.25 : 0.15) + (ink === "strong" ? 0.9 : 0.5) * q);
-      ctx.strokeStyle = riverMode === "all" ? alphaFill(SHAPE.flat, 0.3) : inkRiver(); ctx.stroke();
+      ctx.strokeStyle = riverMode === "all" ? alphaFill(SHAPE.flat, 0.3) : inkRiver(); ctx.stroke(path2d(riverPaths, f, f));
     }
   }
   if (riverMode === "flow" || riverMode === "all") flowLines(sysOf, riverMode === "all");
@@ -185,34 +214,45 @@ function render() {
    Under the rivers (the combined view) they are drawn finer and quieter so the ribbons stay the subject. */
 function slopeThreads(combined) {
   if (!slopeFlow) return;
-  for (const f of slopeFlow.features) {
-    const g = f.properties.mean_gradient; ctx.beginPath(); path(f);
-    ctx.strokeStyle = alphaFill(shapeRamp(g), combined ? (ink === "strong" ? 0.9 : 0.6) : (ink === "strong" ? 0.85 : 0.5)); ctx.lineWidth = combined ? 0.6 : (ink === "strong" ? 0.7 : 0.45); ctx.stroke();
+  // threads are bucketed by gradient (24 steps) so each bucket is one stroke call on one cached path
+  const N = 24, alpha = combined ? (ink === "strong" ? 0.9 : 0.6) : (ink === "strong" ? 0.85 : 0.5);
+  if (!slopePaths.size) {
+    const buckets = Array.from({ length: N }, () => new Path2D());
+    for (const f of slopeFlow.features) { const b = Math.min(N - 1, Math.floor(Math.max(0, f.properties.mean_gradient) / 0.08 * (N - 1))); d3.geoPath(proj, buckets[b])(f); }
+    buckets.forEach((p, i) => slopePaths.set(i, p));
   }
+  ctx.lineWidth = combined ? 0.6 : (ink === "strong" ? 0.7 : 0.45);
+  for (let i = 0; i < N; i++) { ctx.strokeStyle = alphaFill(shapeRamp(0.08 * i / (N - 1)), alpha); ctx.stroke(slopePaths.get(i)); }
 }
 
 /* Flow-line view: each reach drawn as a tapered ribbon whose width grows with discharge, in the colour of its catchment's
    group (or the ink), with a soft glow; the network reads as flow converging on the outlet rather than as a wire frame.
    The taper follows seismic_art's cities concept: strokes gain weight as they gather. Smoothing is Chaikin, two passes. */
 function flowLines(sysOf, combined = false) {
-  const byQ = rivers.filter(f => !fold || sysOf.has(f.properties.system)).sort((a, b) => (a.properties.log_discharge ?? 0) - (b.properties.log_discharge ?? 0));
-  ctx.save();
-  for (const pass of ["glow", "core"]) {
-    for (const f of byQ) {
-      const p = f.properties, q = Math.max(0, p.log_discharge ?? 0);
-      const sys = sysOf.get(p.system);
+  // Ribbons are smoothed once per canvas size and merged into one Path2D per colour and width class (discharge in
+  // twelve steps), so a redraw is a few dozen strokes, thin to wide, glow then core, instead of one per reach.
+  const NW = 12, bkey = [pathKey, mode === "cluster", ink, combined, fold].join("|");   // only the cluster view colours ribbons differently
+  let groups = ribbonPaths.get(bkey);
+  if (!groups) {
+    groups = new Map();
+    for (const f of rivers) {
+      const p = f.properties; if (fold && !sysOf.has(p.system)) continue;
+      const q = Math.max(0, Math.min(1, p.log_discharge ?? 0)), w = Math.round(q * (NW - 1)), sys = sysOf.get(p.system);
       let col = ink === "strong" ? (sys && sys.cluster >= 0 && mode === "cluster" ? CL[sys.cluster % CL.length] : (dark ? "#a8d0ff" : "#1f5a8f")) : (dark ? "#aab7c6" : "#5c6f82");
       if (combined) col = mode === "cluster" && ink === "strong" ? tune(col, 0.35, dark ? -0.05 : 0.08) : SHAPE.flat;   // detuned, so the threads above carry the colour
+      const gk = `${w}|${col}`; let g = groups.get(gk); if (!g) { g = { w, col, path: new Path2D() }; groups.set(gk, g); }
       const lines = f.geometry.type === "LineString" ? [f.geometry.coordinates] : f.geometry.coordinates;
-      for (const line of lines) {
-        const pts = chaikin(line.map(c => proj(c)), 2);
-        if (pts.length < 2) continue;
-        ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
-        if (pass === "glow") { ctx.strokeStyle = alphaFill(col, combined ? 0.1 : ink === "strong" ? 0.18 : 0.1); ctx.lineWidth = 2.2 + 2.6 * q; }
-        else { ctx.strokeStyle = alphaFill(col, combined ? 0.6 : ink === "strong" ? 0.95 : 0.55); ctx.lineWidth = 0.4 + 1.3 * q; }
-        ctx.stroke();
-      }
+      for (const line of lines) { const pts = chaikin(line.map(c => proj(c)), 2); if (pts.length < 2) continue; g.path.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) g.path.lineTo(pts[i][0], pts[i][1]); }
     }
+    groups = new Map([...groups].sort((a, b) => a[1].w - b[1].w));
+    ribbonPaths.set(bkey, groups);
+  }
+  ctx.save();
+  for (const pass of ["glow", "core"]) for (const g of groups.values()) {
+    const q = g.w / (NW - 1);
+    if (pass === "glow") { ctx.strokeStyle = alphaFill(g.col, combined ? 0.1 : ink === "strong" ? 0.18 : 0.1); ctx.lineWidth = 2.2 + 2.6 * q; }
+    else { ctx.strokeStyle = alphaFill(g.col, combined ? 0.6 : ink === "strong" ? 0.95 : 0.55); ctx.lineWidth = 0.4 + 1.3 * q; }
+    ctx.stroke(g.path);
   }
   ctx.restore();
 }

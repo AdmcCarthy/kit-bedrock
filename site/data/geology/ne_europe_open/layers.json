@@ -31,11 +31,9 @@
    4340000
   ],
   "hillshade": {
-   "overview": "relief/ne_europe/overview_hillshade.png",
    "regional": "relief/ne_europe/regional_hillshade.png"
   },
   "bands": {
-   "overview": "relief/ne_europe/overview.geojson",
    "regional": "relief/ne_europe/regional.geojson"
   },
   "attribution": "Relief: Copernicus DEM GLO-90 (ESA), EMODnet Bathymetry; see Relief/docs/sources.md"

@@ -12,6 +12,7 @@
 const params = new URLSearchParams(location.search);
 const region = params.get("r") || "norway";
 const base = `data/geology/${region}/`;
+const src = f => /^https?:/.test(f) ? f : base + f;   // a layer file may live on a release (the big files are release assets, copied into site/release/ at deploy)
 const [doc, pal] = await Promise.all([fetch(base + "layers.json").then(r => r.json()), fetch("palettes.json").then(r => r.json())]);
 const stage = document.getElementById("stage"), canvas = document.getElementById("map"), ctx = canvas.getContext("2d");
 const tip = document.getElementById("tip");
@@ -64,13 +65,36 @@ async function loadLevel(name) {
   const out = [];
   for (const m of doc.levels[name].maps) {
     if (!m.file) continue;
-    const topo = await (await fetch(base + m.file)).json();
+    const topo = await (await fetch(src(m.file))).json();
     const fc = topojson.feature(topo, topo.objects[m.map_id]);
     const mesh = topojson.mesh(topo, topo.objects[m.map_id], (a, b) => a !== b);
     for (const f of fc.features) { rewind(f.geometry); f.bbox = projected ? d3.geoPath().bounds(f) : d3.geoBounds(f); }
     out.push({ map: m, features: fc.features, mesh });
   }
   cache.set(name, out); return out;
+}
+// Projected geometry as Path2D, built once per level and canvas size and reused on every redraw (a palette or view change
+// otherwise re-walked every unit); the cache empties when the projection changes.
+let pathKey = "";
+const unitPaths = new Map(), meshPaths = new Map(), fillBatches = new Map();
+function unitPath(f) { let p = unitPaths.get(f); if (!p) { p = new Path2D(); d3.geoPath(proj, p)(f); unitPaths.set(f, p); } return p; }
+function meshPath(L) { let p = meshPaths.get(L); if (!p) { p = new Path2D(); d3.geoPath(proj, p)(L.mesh); meshPaths.set(L, p); } return p; }
+// Units sharing a fill are merged into one Path2D per colour (a few hundred fills instead of one per unit); the batch
+// is keyed by everything that sets the colour, so a view, palette, frame or scheme change rebuilds it once
+function batches(L, chosen, alpha) {
+  const key = [chosen, L.map.map_id, mode, palette, frame, dark, alpha].join("|");
+  let b = fillBatches.get(key);
+  if (!b) {
+    b = { byColour: new Map(), byHatch: new Map(), land: new Path2D() };
+    for (const f of L.features) {
+      const p = f.properties, col = alphaFill(fillOf(p), p.offshore ? alpha * 0.42 : alpha);
+      let pc = b.byColour.get(col); if (!pc) { pc = new Path2D(); b.byColour.set(col, pc); } pc.addPath(unitPath(f));
+      if (mode === "age+hatch" && p.litho_class !== "ice_water") { const h = pal.hatch[p.litho_class]; if (h && h !== "none") { let ph = b.byHatch.get(h); if (!ph) { ph = new Path2D(); b.byHatch.set(h, ph); } ph.addPath(unitPath(f)); } }
+      if (!p.offshore) b.land.addPath(unitPath(f));
+    }
+    fillBatches.set(key, b);
+  }
+  return b;
 }
 // Relief's hillshade PNG is light (flat ground sits near 180 of 255), and soft-light is neutral at mid grey, so drawn as it
 // comes it barely shows. Flat ground is moved to mid grey and the slopes stretched before the shade is composited.
@@ -85,18 +109,18 @@ async function loadRelief(level) {
   if (!projected) return [null, null];
   const lv = doc.relief.hillshade[level] ? level : Object.keys(doc.relief.hillshade).slice(-1)[0];
   if (!hillCache.has(lv)) {
-    const img = new Image(); img.src = doc.relief.hillshade[lv];
-    await new Promise(res => { img.onload = res; img.onerror = res; });
-    hillCache.set(lv, img.width ? toneHill(img) : null);
-    const b = await fetch(doc.relief.bands[lv]).then(r => r.ok ? r.json() : null).catch(() => null);
-    bandCache.set(lv, b);
     // Relief's base map (Relief/docs/base-maps.md): linear bathymetry on the frame's depth scale, stepped land tints by climate
-    // zone, rendered once by Relief; its manifest names the depth scale for the key
+    // zone, rendered once by Relief; its manifest names the depth scale for the key and, when Relief wrote them, the WebP tints
+    // and a neutral shade (flat ground at mid grey) that need no remapping. The bands are fetched only where no base exists.
     const dir = (doc.relief.hillshade[lv]).replace(/\/[^/]*$/, "");
     const rm = await fetch(dir + "/manifest.json").then(r => r.ok ? r.json() : null).catch(() => null);
-    const bases = {};
-    if (rm && rm.base) for (const th of ["light", "dark"]) { const im = new Image(); im.src = dir + "/" + rm.base.regional[th]; await new Promise(res => { im.onload = res; im.onerror = res; }); if (im.width) bases[th] = im; }
+    const load = async (srcUrl) => { const im = new Image(); im.decoding = "async"; im.src = srcUrl; await new Promise(res => { im.onload = res; im.onerror = res; }); return im.width ? im : null; };
+    const bases = {}, th = dark ? "dark" : "light";
+    if (rm && rm.base) bases[th] = await load(dir + "/" + ((rm.base.webp || {})[th] || rm.base.regional[th]));   // only this scheme's image
     baseCache.set(lv, { rm, bases });
+    if (rm && rm.base && rm.base.shade) hillCache.set(lv, await load(dir + "/" + rm.base.shade.file));
+    else { const img = await load(doc.relief.hillshade[lv]); hillCache.set(lv, img ? toneHill(img) : null); }
+    bandCache.set(lv, bases[th] ? null : await fetch(doc.relief.bands[lv]).then(r => r.ok ? r.json() : null).catch(() => null));
   }
   return [hillCache.get(lv), bandCache.get(lv), baseCache.get(lv)];
 }
@@ -216,6 +240,7 @@ async function render() {
   canvas.width = width * dpr; canvas.height = height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const vintage = frame === "vintage", pad = vintage ? 52 : 12;
   proj = makeProjection(width, height, pad);
+  const key = `${width}x${height}|${pad}`; if (key !== pathKey) { pathKey = key; unitPaths.clear(); meshPaths.clear(); fillBatches.clear(); }
   const chosen = levelName || chooseLevel(proj);
   layers = await loadLevel(chosen); path = d3.geoPath(proj, ctx); markLevel(chosen);
   const [hill, bands, rbase] = await loadRelief(chosen);
@@ -230,23 +255,20 @@ async function render() {
   if (baseImg) {
     const [x0, y0, x1, y1] = doc.relief.extent; const a = proj([x0, y1]), b = proj([x1, y0]);
     ctx.save(); if (vintage) ctx.globalAlpha = 0.6; ctx.drawImage(baseImg, a[0], a[1], b[0] - a[0], b[1] - a[1]); ctx.restore();
-    if (bands) reliefLevels.land = bandLevels(bands, "land");   // for the terrain key only; the image carries the colour
+    reliefLevels.land = rbase.rm.base.land_classes_m || (bands ? bandLevels(bands, "land") : null);   // for the terrain key only; the image carries the colour
   } else if (bands) {
     reliefLevels.sea = drawBands(bands, "sea", vintage ? 0.5 : 1);
     if (mode === "terrain") reliefLevels.land = drawBands(bands, "land", vintage ? 0.85 : 1);
   }
   if (!projected) { ctx.beginPath(); path(d3.geoGraticule().step([5, 5])()); ctx.strokeStyle = vintage ? (dark ? "rgba(255,255,255,.12)" : "rgba(80,60,30,.22)") : (dark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.06)"); ctx.lineWidth = vintage ? 0.6 : 1; ctx.stroke(); }
   if (!vintage && !projected) { ctx.save(); ctx.shadowColor = dark ? "rgba(0,0,0,.6)" : "rgba(30,40,60,.28)"; ctx.shadowBlur = 18; ctx.shadowOffsetY = 4; ctx.fillStyle = dark ? "#2a3444" : "#ffffff";
-    for (const L of layers) { ctx.beginPath(); for (const f of L.features) if (!f.properties.offshore) path(f); ctx.fill(); } ctx.restore(); }
+    for (const L of layers) ctx.fill(batches(L, chosen, vintage ? 0.92 : (dark ? 0.72 : 0.85)).land); ctx.restore(); }
   const alpha = vintage ? 0.92 : (dark ? 0.72 : 0.85);
   for (const L of (mode === "terrain" ? [] : layers)) {
-    for (const f of L.features) {
-      const p = f.properties; ctx.beginPath(); path(f);
-      ctx.fillStyle = alphaFill(fillOf(p), p.offshore ? alpha * 0.42 : alpha); ctx.fill();
-      if (mode === "age+hatch" && p.litho_class !== "ice_water") { const h = hatch(pal.hatch[p.litho_class]); if (h) { ctx.fillStyle = h; ctx.fill(); } }
-    }
-    ctx.beginPath(); path(L.mesh);
-    ctx.strokeStyle = vintage ? (dark ? "rgba(255,255,255,.25)" : "rgba(60,45,30,.45)") : (dark ? "rgba(255,255,255,.14)" : "rgba(255,255,255,.55)"); ctx.lineWidth = vintage ? 0.35 : 0.5; ctx.stroke();
+    const b = batches(L, chosen, alpha);
+    for (const [col, p] of b.byColour) { ctx.fillStyle = col; ctx.fill(p); }
+    for (const [name, p] of b.byHatch) { const h = hatch(name); if (h) { ctx.fillStyle = h; ctx.fill(p); } }
+    ctx.strokeStyle = vintage ? (dark ? "rgba(255,255,255,.25)" : "rgba(60,45,30,.45)") : (dark ? "rgba(255,255,255,.14)" : "rgba(255,255,255,.55)"); ctx.lineWidth = vintage ? 0.35 : 0.5; ctx.stroke(meshPath(L));
   }
   // Relief hillshade multiplied over the colours: the terrain shows through the geology; strength from the shade control
   if (hill && shade > 0) {

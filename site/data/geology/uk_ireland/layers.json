@@ -335,7 +335,7 @@
    "maps": [
     {
      "map_id": "uk_bgs_625k_bedrock",
-     "file": "detail__uk_bgs_625k_bedrock.topojson",
+     "file": "../../../release/geology__uk_ireland__detail__uk_bgs_625k_bedrock.topojson",
      "title": "Great Britain, BGS Geology 625k bedrock (DiGMapGB-625 v5)",
      "register_id": "bgs-geology-625k",
      "source_scale": 625000,
@@ -392,7 +392,7 @@
     },
     {
      "map_id": "ie_gsi_500k_bedrock",
-     "file": "detail__ie_gsi_500k_bedrock.topojson",
+     "file": "../../../release/geology__uk_ireland__detail__ie_gsi_500k_bedrock.topojson",
      "title": "Ireland, GSI and GSNI bedrock 1:500 000",
      "register_id": "gsi-bedrock-500k",
      "source_scale": 500000,

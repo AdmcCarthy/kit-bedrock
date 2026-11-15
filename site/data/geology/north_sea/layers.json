@@ -31,11 +31,9 @@
    6970000
   ],
   "hillshade": {
-   "overview": "relief/north_sea/overview_hillshade.png",
    "regional": "relief/north_sea/regional_hillshade.png"
   },
   "bands": {
-   "overview": "relief/north_sea/overview.geojson",
    "regional": "relief/north_sea/regional.geojson"
   },
   "attribution": "Relief: Copernicus DEM GLO-90 (ESA), EMODnet Bathymetry; see Relief/docs/sources.md"

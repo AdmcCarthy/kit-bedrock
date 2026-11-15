@@ -34,12 +34,12 @@ S2S_REGIONS = ["north_sea", "norwegian_sea", "ne_europe"]
 RELIEF_FRAMES = ["ne_europe", "north_sea", "norwegian_sea"]
 
 
-# Files over this size are not served from Pages (the deployment sync has timed out near 100 MB): publish.py moves them to
-# dist/<DATA_TAG>/ and rewrites their paths to the release asset, which scripts/release_data.py uploads. GitHub serves release
-# assets with open CORS, so the viewers fetch them directly.
+# Files over this size are not kept in git: publish.py moves them to dist/<DATA_TAG>/ and points their layers at site/release/,
+# which scripts/release_data.py uploads as release assets and the Pages workflow downloads again before it deploys. The pages
+# fetch them from their own origin: GitHub's release downloads send no CORS header, so a browser cannot fetch them directly.
 BIG_BYTES = int(os.environ.get("BEDROCK_BIG_BYTES", 2_500_000))   # a huge value keeps everything local, for measuring
 DATA_TAG = "data-2026-11-10"
-RELEASE_URL = f"https://github.com/AdmcCarthy/Bedrock/releases/download/{DATA_TAG}/"
+RELEASE_URL = "../../../release/"   # site/release/ is filled from the GitHub release by the Pages workflow (scripts/fetch_release.py locally)
 DIST = ROOT / "dist" / DATA_TAG
 
 

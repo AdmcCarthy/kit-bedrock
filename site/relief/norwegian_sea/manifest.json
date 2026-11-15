@@ -12,6 +12,16 @@
    "light": "regional_base_light.png",
    "dark": "regional_base_dark.png"
   },
+  "webp": {
+   "light": "regional_base_light.webp",
+   "dark": "regional_base_dark.webp"
+  },
+  "shade": {
+   "file": "regional_shade.webp",
+   "flat": 128,
+   "gain": 2.5,
+   "note": "the regional hillshade with flat ground at mid grey and slopes stretched 2.5 x; composite with soft-light directly"
+  },
   "style": "Detuned: linear bathymetry on the ocean depth scale, stepped land classes cross-blended by climate zone",
   "depth_scale": {
    "kind": "ocean",
