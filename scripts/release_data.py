@@ -5,7 +5,7 @@ layers.json. This script creates the release (or reuses it) and uploads the file
 replaces them in place and the URLs never change. The viewers fetch release assets directly (GitHub serves them with
 open CORS).
 
-Usage: uv run --project ../geology-map-processing python scripts/release_data.py
+Usage: uv run --project ../kit-geology-maps python scripts/release_data.py
 """
 
 from __future__ import annotations

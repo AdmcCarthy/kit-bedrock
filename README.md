@@ -9,7 +9,7 @@ A public gallery, in Relief's manner, of open geological maps read into one lang
 
 Regions: Norway, Britain and Ireland, the North Sea, Fennoscandia, Austria and an open-licence North-east Europe for bedrock; the North Sea, the Norwegian Sea and North-east Europe for source to sink.
 
-The layers are published from the author's private pipelines (`europe-gis-data`, `geology-map-processing`, `source-to-sink`) by `scripts/publish.py`, which copies only regions whose every map carries an open licence for display and writes the sources into `site/manifest.json`. `DATA-LICENCE.md` is the record of terms. The site is static; GitHub Pages serves `site/` as it is.
+The layers are published from the author's private pipelines (`europe-gis-data`, `kit-geology-maps`, `source-to-sink`) by `scripts/publish.py`, which copies only regions whose every map carries an open licence for display and writes the sources into `site/manifest.json`. `DATA-LICENCE.md` is the record of terms. The site is static; GitHub Pages serves `site/` as it is.
 
 Add `&theme=light` or `&theme=dark` to a page address to force a theme; the other options are buttons on the page.
 

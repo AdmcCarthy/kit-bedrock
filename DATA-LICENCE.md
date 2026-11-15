@@ -26,7 +26,7 @@ The composition statistics attached to each catchment were computed from the map
 
 ## Terrain
 
-Hillshade and land bands are Relief products (github.com/AdmcCarthy/Relief) from Copernicus DEM GLO-90 (© DLR e.V. 2010–2014 and © Airbus 2014–2018, provided under Copernicus by the European Union and ESA), EMODnet Bathymetry (EMODnet Bathymetry Consortium 2024), NOAA ETOPO 2022, and on the Norwegian Sea frame Kartverket and MAREANO under the Norwegian licence for open data. Climate zones used in the budget: Beck and others (2023), Köppen-Geiger 1991–2020, 1 km, CC BY 4.0.
+Hillshade and land bands are Relief products (github.com/AdmcCarthy/kit-relief) from Copernicus DEM GLO-90 (© DLR e.V. 2010–2014 and © Airbus 2014–2018, provided under Copernicus by the European Union and ESA), EMODnet Bathymetry (EMODnet Bathymetry Consortium 2024), NOAA ETOPO 2022, and on the Norwegian Sea frame Kartverket and MAREANO under the Norwegian licence for open data. Climate zones used in the budget: Beck and others (2023), Köppen-Geiger 1991–2020, 1 km, CC BY 4.0.
 
 ## Chart colours
 

@@ -3,9 +3,9 @@
 Only regions whose every source is open for public display are copied (the allow-lists below); each copied region's
 licence lines are written into site/manifest.json and DATA-LICENCE.md is the human record. Relief's hillshade and
 land band for each frame are copied reduced, with Relief's attribution. The viewers are the preview pages of
-geology-map-processing and source-to-sink with their data paths rewritten to this site.
+kit-geology-maps and source-to-sink with their data paths rewritten to this site.
 
-Usage: uv run --project ../geology-map-processing python scripts/publish.py
+Usage: uv run --project ../kit-geology-maps python scripts/publish.py
 """
 
 from __future__ import annotations
@@ -19,9 +19,9 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 P = ROOT.parent
-GEO = P / "geology-map-processing"
+GEO = P / "kit-geology-maps"
 S2S = P / "source-to-sink"
-RELIEF = P / "Relief"
+RELIEF = P / "kit-relief"
 SITE = ROOT / "site"
 
 # regions whose maps all carry an open licence: NLOD (NGU), SGU open geodata, GTK open licence, OGL (BGS, GSNI), CC BY 4.0 (GSI, GeoSphere)
@@ -105,7 +105,7 @@ def main() -> None:
                 shutil.copy2(src_dir / name, d / name)
         if base:
             (d / "manifest.json").write_text(json.dumps({"area": man["area"], "crs": man["crs"], "extent": man["extent"], "base": base}, indent=1), encoding="utf-8")
-        manifest["relief"][fr] = {"crs": man["crs"], "extent": man["extent"], "attribution": "Relief (github.com/AdmcCarthy/Relief): Copernicus DEM GLO-90 (ESA), EMODnet Bathymetry; Kartverket and MAREANO on the Norwegian Sea frame"}
+        manifest["relief"][fr] = {"crs": man["crs"], "extent": man["extent"], "attribution": "Relief (github.com/AdmcCarthy/kit-relief): Copernicus DEM GLO-90 (ESA), EMODnet Bathymetry; Kartverket and MAREANO on the Norwegian Sea frame"}
 
     # geology regions
     for r in GEOLOGY_REGIONS:
