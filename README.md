@@ -1,5 +1,8 @@
 # Bedrock
 
+[![Pages](https://github.com/AdmcCarthy/kit-bedrock/actions/workflows/pages.yml/badge.svg)](https://github.com/AdmcCarthy/kit-bedrock/actions/workflows/pages.yml)
+[![Licence](https://img.shields.io/badge/licence-MIT%20with%20acknowledgement-lightgrey)](LICENSE)
+
 A public gallery, in Relief's manner, of open geological maps read into one language and of the catchments that erode them, drawn with D3 at several levels of detail with every display type the pipelines offer. Live at https://admccarthy.github.io/kit-bedrock/ once Pages has deployed.
 
 | Page | What | Views |
