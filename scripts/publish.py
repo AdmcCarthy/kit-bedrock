@@ -3,7 +3,7 @@
 Only regions whose every source is open for public display are copied (the allow-lists below); each copied region's
 licence lines are written into site/manifest.json and DATA-LICENCE.md is the human record. Relief's hillshade and
 land band for each frame are copied reduced, with Relief's attribution. The viewers are the preview pages of
-kit-geology-maps and source-to-sink with their data paths rewritten to this site.
+the geology-map and source-to-sink pipelines with their data paths rewritten to this site.
 
 Usage: uv run --project ../kit-geology-maps python scripts/publish.py
 """
