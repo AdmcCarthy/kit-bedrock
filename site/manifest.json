@@ -404,7 +404,7 @@
     5400000,
     4340000
    ],
-   "attribution": "Relief (github.com/AdmcCarthy/Relief): Copernicus DEM GLO-90 (ESA), EMODnet Bathymetry; Kartverket and MAREANO on the Norwegian Sea frame"
+   "attribution": "Relief (github.com/AdmcCarthy/kit-relief): Copernicus DEM GLO-90 (ESA), EMODnet Bathymetry; Kartverket and MAREANO on the Norwegian Sea frame"
   },
   "north_sea": {
    "crs": "EPSG:25832",
