@@ -1,7 +1,7 @@
 """Download the release assets that the layers point at into site/release/, so the gallery works from a plain checkout.
 
 The Pages workflow does this before it deploys; run it by hand to preview locally. The release tag is DATA_TAG in
-scripts/publish.py. Public repository: no token needed.
+scripts/data_release.py. Public repository: no token needed.
 
 Usage: python scripts/fetch_release.py
 """
@@ -18,7 +18,7 @@ REPO = "AdmcCarthy/kit-bedrock"
 
 
 def main() -> None:
-    tag = re.search(r'^DATA_TAG = "([^"]+)"', (ROOT / "scripts" / "publish.py").read_text(encoding="utf-8"), re.M).group(1)
+    tag = re.search(r'^DATA_TAG = "([^"]+)"', (ROOT / "scripts" / "data_release.py").read_text(encoding="utf-8"), re.M).group(1)
     with urllib.request.urlopen(f"https://api.github.com/repos/{REPO}/releases/tags/{tag}") as r:
         assets = json.load(r)["assets"]
     dest = ROOT / "site" / "release"

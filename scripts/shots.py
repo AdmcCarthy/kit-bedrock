@@ -1,6 +1,6 @@
 """Screenshot every published page into site/shots/*.webp with headless Chrome (light and dark), serving site/ locally.
 
-Usage: uv run --project ../kit-geology-maps python scripts/shots.py [--port 8790]
+Usage: uv run python scripts/shots.py [--port 8790]   (needs Pillow, which uv installs from pyproject.toml)
 """
 
 from __future__ import annotations
