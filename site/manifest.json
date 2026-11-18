@@ -320,7 +320,7 @@
    "name": "North Sea: Norway and Britain face to face, Shetland between",
    "attribution": [
     "HydroSHEDS: Lehner, B., Grill G. (2013), Hydrological Processes 27(15); https://www.hydrosheds.org",
-    "Geology: the surveys named in geology-map-processing provenance files for no_ngu_n1350_units, se_sgu_1m_bedrock, fi_gtk_1m_rocktypes, pl_pig_1m, uk_bgs_625k_bedrock, ni_gsni_250k_bedrock, ie_gsi_500k_bedrock, at_geosphere_500k, es_igme_1m_units, eu_igme5000",
+    "Geology: the surveys named in the private geology-map pipeline's provenance files for no_ngu_n1350_units, se_sgu_1m_bedrock, fi_gtk_1m_rocktypes, pl_pig_1m, uk_bgs_625k_bedrock, ni_gsni_250k_bedrock, ie_gsi_500k_bedrock, at_geosphere_500k, es_igme_1m_units, eu_igme5000",
     "Terrain: Relief (Copernicus DEM GLO-90, EMODnet Bathymetry)"
    ],
    "geology_maps": [
@@ -346,7 +346,7 @@
    "name": "Norwegian Sea margin: Norway north of Stad, Sweden and Finland north of 61",
    "attribution": [
     "HydroSHEDS: Lehner, B., Grill G. (2013), Hydrological Processes 27(15); https://www.hydrosheds.org",
-    "Geology: the surveys named in geology-map-processing provenance files for no_ngu_n1350_units, se_sgu_1m_bedrock, fi_gtk_1m_rocktypes, pl_pig_1m, uk_bgs_625k_bedrock, ni_gsni_250k_bedrock, ie_gsi_500k_bedrock, at_geosphere_500k, es_igme_1m_units, eu_igme5000",
+    "Geology: the surveys named in the private geology-map pipeline's provenance files for no_ngu_n1350_units, se_sgu_1m_bedrock, fi_gtk_1m_rocktypes, pl_pig_1m, uk_bgs_625k_bedrock, ni_gsni_250k_bedrock, ie_gsi_500k_bedrock, at_geosphere_500k, es_igme_1m_units, eu_igme5000",
     "Terrain: Relief (Copernicus DEM GLO-90, EMODnet Bathymetry)"
    ],
    "geology_maps": [
@@ -372,7 +372,7 @@
    "name": "North-east Europe: Britain, Ireland, southern Scandinavia, the Baltic and Poland",
    "attribution": [
     "HydroSHEDS: Lehner, B., Grill G. (2013), Hydrological Processes 27(15); https://www.hydrosheds.org",
-    "Geology: the surveys named in geology-map-processing provenance files for no_ngu_n1350_units, se_sgu_1m_bedrock, fi_gtk_1m_rocktypes, pl_pig_1m, uk_bgs_625k_bedrock, ni_gsni_250k_bedrock, ie_gsi_500k_bedrock, at_geosphere_500k, es_igme_1m_units, eu_igme5000",
+    "Geology: the surveys named in the private geology-map pipeline's provenance files for no_ngu_n1350_units, se_sgu_1m_bedrock, fi_gtk_1m_rocktypes, pl_pig_1m, uk_bgs_625k_bedrock, ni_gsni_250k_bedrock, ie_gsi_500k_bedrock, at_geosphere_500k, es_igme_1m_units, eu_igme5000",
     "Terrain: Relief (Copernicus DEM GLO-90, EMODnet Bathymetry)"
    ],
    "geology_maps": [
